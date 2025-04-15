@@ -5,31 +5,59 @@ import { Button } from "./ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Badge } from "./ui/badge";
 import { Textarea } from "./ui/textarea";
-import { formatDistanceToNow } from "date-fns";
-import { CalendarDays, MessageCircleHeart, Clock, NotebookPen } from "lucide-react";
+import { Input } from "./ui/input";
+import { formatDistanceToNow, format } from "date-fns";
+import { CalendarDays, MessageCircleHeart, Clock, NotebookPen, Trash2, Calendar, Music } from "lucide-react";
 import { useState } from "react";
+import { Calendar as CalendarPicker } from "./ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
 interface FriendDetailProps {
   friend: Friend | null;
   isOpen: boolean;
   onClose: () => void;
   onUpdateFriend: (friend: Friend) => void;
+  onDeleteFriend: (friendId: string) => void;
 }
 
-export function FriendDetail({ friend, isOpen, onClose, onUpdateFriend }: FriendDetailProps) {
-  const [notes, setNotes] = useState<string>(friend?.notes || "");
+export function FriendDetail({ friend, isOpen, onClose, onUpdateFriend, onDeleteFriend }: FriendDetailProps) {
+  const [notes, setNotes] = useState<string>("");
+  const [artists, setArtists] = useState<string[]>([]);
+  const [birthday, setBirthday] = useState<Date | undefined>(undefined);
+  
+  // Reset state when friend changes
+  useState(() => {
+    if (friend) {
+      setNotes(friend.notes);
+      setArtists(friend.favoriteArtists);
+      setBirthday(friend.birthday ? new Date(friend.birthday) : undefined);
+    }
+  });
   
   if (!friend) {
     return null;
   }
   
-  const handleUpdateNotes = () => {
+  const handleUpdateFriend = () => {
     onUpdateFriend({
       ...friend,
       notes,
-      lastInteraction: new Date().toISOString()
+      lastInteraction: new Date().toISOString(),
+      favoriteArtists: artists,
+      birthday: birthday ? birthday.toISOString() : undefined,
     });
     onClose();
+  };
+  
+  const handleDelete = () => {
+    onDeleteFriend(friend.id);
+    onClose();
+  };
+  
+  const handleArtistChange = (index: number, value: string) => {
+    const newArtists = [...(artists || [])];
+    newArtists[index] = value;
+    setArtists(newArtists.slice(0, 3));
   };
   
   const getInitials = (name: string): string => {
@@ -76,6 +104,46 @@ export function FriendDetail({ friend, isOpen, onClose, onUpdateFriend }: Friend
             <div className="capitalize">{friend.contactFrequency}</div>
           </div>
           
+          <div className="space-y-2">
+            <label className="text-sm font-medium flex items-center gap-1">
+              <Calendar className="h-4 w-4" />
+              Birthday
+            </label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="w-full justify-start text-left font-normal">
+                  {birthday ? format(birthday, "PPP") : "Select birthday"}
+                  <Calendar className="ml-auto h-4 w-4 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <CalendarPicker
+                  mode="single"
+                  selected={birthday}
+                  onSelect={setBirthday}
+                  className="rounded-md border pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+          
+          <div className="space-y-2">
+            <label className="text-sm font-medium flex items-center gap-1">
+              <Music className="h-4 w-4" />
+              Top 3 Favorite Artists
+            </label>
+            <div className="space-y-2">
+              {[0, 1, 2].map((index) => (
+                <Input
+                  key={index}
+                  placeholder={`Artist ${index + 1}`}
+                  value={artists[index] || ''}
+                  onChange={(e) => handleArtistChange(index, e.target.value)}
+                />
+              ))}
+            </div>
+          </div>
+          
           <div>
             <label className="text-sm font-medium flex items-center gap-1 mb-2">
               <NotebookPen className="h-4 w-4" />
@@ -93,20 +161,30 @@ export function FriendDetail({ friend, isOpen, onClose, onUpdateFriend }: Friend
         <DialogFooter className="sm:justify-between gap-4">
           <Button 
             type="button" 
-            variant="outline" 
-            onClick={onClose}
-            className="sm:w-full"
-          >
-            Cancel
-          </Button>
-          <Button 
-            type="button" 
-            onClick={handleUpdateNotes}
+            variant="destructive"
+            onClick={handleDelete}
             className="sm:w-full gap-1"
           >
-            <MessageCircleHeart className="h-4 w-4" />
-            Log Interaction
+            <Trash2 className="h-4 w-4" />
+            Delete Friend
           </Button>
+          <div className="flex gap-2">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={onClose}
+            >
+              Cancel
+            </Button>
+            <Button 
+              type="button" 
+              onClick={handleUpdateFriend}
+              className="gap-1"
+            >
+              <MessageCircleHeart className="h-4 w-4" />
+              Update
+            </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>

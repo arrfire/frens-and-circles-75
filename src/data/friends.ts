@@ -1,7 +1,6 @@
 
 import { Friend } from "../types";
 
-// Generate fake data for 15 best friends and 15 work friends
 const generateFriends = (category: 'bestfren' | 'workfren', count: number): Friend[] => {
   return Array.from({ length: count }).map((_, index) => {
     const id = `${category}-${index + 1}`;
@@ -23,6 +22,8 @@ const generateFriends = (category: 'bestfren' | 'workfren', count: number): Frie
       status: statuses[Math.floor(Math.random() * statuses.length)],
       notes: `Notes about ${category === 'bestfren' ? 'Best' : 'Work'} Friend ${index + 1}`,
       contactFrequency: frequencies[Math.floor(Math.random() * frequencies.length)],
+      birthday: '',
+      favoriteArtists: [],
     };
   });
 };

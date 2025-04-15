@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CircleProgress } from "@/components/CircleProgress";
@@ -49,44 +48,12 @@ const Index = () => {
     };
   };
   
-  // Filter friends based on search query, status filter and active tab
-  const filteredFriends = friends.filter(friend => {
-    // Search query filter
-    const matchesSearch = friend.name.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    // Status filter
-    let matchesStatus = true;
-    if (statusFilter === "needs-attention") {
-      const lastInteraction = new Date(friend.lastInteraction);
-      const today = new Date();
-      const daysSince = Math.floor((today.getTime() - lastInteraction.getTime()) / (1000 * 60 * 60 * 24));
-      
-      switch (friend.contactFrequency) {
-        case "weekly": matchesStatus = daysSince > 7; break;
-        case "biweekly": matchesStatus = daysSince > 14; break;
-        case "monthly": matchesStatus = daysSince > 30; break;
-        default: matchesStatus = false;
-      }
-    } else if (statusFilter !== "all") {
-      matchesStatus = friend.status === statusFilter;
-    }
-    
-    // Category/tab filter
-    const matchesCategory = 
-      activeTab === "all" ||
-      (activeTab === "bestfrens" && friend.category === "bestfren") ||
-      (activeTab === "workfrens" && friend.category === "workfren");
-    
-    return matchesSearch && matchesStatus && matchesCategory;
-  });
-  
-  // Add new friend
-  const handleAddFriend = (newFriend: Omit<Friend, "id">) => {
-    const id = `${newFriend.category}-${Date.now()}`;
-    setFriends(prev => [...prev, { ...newFriend, id }]);
+  // Delete friend
+  const handleDeleteFriend = (friendId: string) => {
+    setFriends(prev => prev.filter(friend => friend.id !== friendId));
   };
   
-  // Update existing friend
+  // Update friend
   const handleUpdateFriend = (updatedFriend: Friend) => {
     setFriends(prev => 
       prev.map(friend => 
@@ -95,6 +62,70 @@ const Index = () => {
     );
     setSelectedFriend(null);
   };
+  
+  // Add new friend
+  const handleAddFriend = (newFriend: Omit<Friend, "id">) => {
+    const id = `${newFriend.category}-${Date.now()}`;
+    setFriends(prev => [...prev, { ...newFriend, id }]);
+  };
+  
+  // Sort and filter friends
+  const sortAndFilterFriends = (friends: Friend[]) => {
+    return friends
+      .filter(friend => {
+        // Search query filter
+        const matchesSearch = friend.name.toLowerCase().includes(searchQuery.toLowerCase());
+        
+        // Status filter
+        let matchesStatus = true;
+        if (statusFilter === "needs-attention") {
+          const lastInteraction = new Date(friend.lastInteraction);
+          const today = new Date();
+          const daysSince = Math.floor((today.getTime() - lastInteraction.getTime()) / (1000 * 60 * 60 * 24));
+          
+          switch (friend.contactFrequency) {
+            case "weekly": matchesStatus = daysSince > 7; break;
+            case "biweekly": matchesStatus = daysSince > 14; break;
+            case "monthly": matchesStatus = daysSince > 30; break;
+            default: matchesStatus = false;
+          }
+        } else if (statusFilter !== "all") {
+          matchesStatus = friend.status === statusFilter;
+        }
+        
+        // Category/tab filter
+        const matchesCategory = 
+          activeTab === "all" ||
+          (activeTab === "bestfrens" && friend.category === "bestfren") ||
+          (activeTab === "workfrens" && friend.category === "workfren");
+        
+        return matchesSearch && matchesStatus && matchesCategory;
+      })
+      .sort((a, b) => {
+        // Sort by upcoming birthday if both have birthdays
+        if (a.birthday && b.birthday) {
+          const today = new Date();
+          const birthdayA = new Date(a.birthday);
+          const birthdayB = new Date(b.birthday);
+          
+          // Set year to current year for comparison
+          birthdayA.setFullYear(today.getFullYear());
+          birthdayB.setFullYear(today.getFullYear());
+          
+          // If birthday has passed this year, add a year for next occurrence
+          if (birthdayA < today) birthdayA.setFullYear(today.getFullYear() + 1);
+          if (birthdayB < today) birthdayB.setFullYear(today.getFullYear() + 1);
+          
+          return birthdayA.getTime() - birthdayB.getTime();
+        }
+        // Put friends with birthdays first
+        if (a.birthday && !b.birthday) return -1;
+        if (!a.birthday && b.birthday) return 1;
+        return 0;
+      });
+  };
+
+  const filteredFriends = sortAndFilterFriends(friends);
   
   // Open friend detail modal
   const handleOpenFriendDetail = (friend: Friend) => {
@@ -247,6 +278,7 @@ const Index = () => {
         isOpen={isDetailModalOpen}
         onClose={() => setIsDetailModalOpen(false)}
         onUpdateFriend={handleUpdateFriend}
+        onDeleteFriend={handleDeleteFriend}
       />
       
       {/* Add Friend Modal */}

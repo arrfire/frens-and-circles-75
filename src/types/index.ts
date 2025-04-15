@@ -8,6 +8,8 @@ export interface Friend {
   status: 'active' | 'busy' | 'away';
   notes: string;
   contactFrequency: 'weekly' | 'biweekly' | 'monthly';
+  birthday?: string;
+  favoriteArtists: string[];
 }
 
 export interface CircleStats {
