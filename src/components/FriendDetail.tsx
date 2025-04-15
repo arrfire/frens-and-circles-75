@@ -8,7 +8,7 @@ import { Textarea } from "./ui/textarea";
 import { Input } from "./ui/input";
 import { formatDistanceToNow, format } from "date-fns";
 import { CalendarDays, MessageCircleHeart, Clock, NotebookPen, Trash2, Calendar, Music } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Calendar as CalendarPicker } from "./ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
@@ -25,14 +25,14 @@ export function FriendDetail({ friend, isOpen, onClose, onUpdateFriend, onDelete
   const [artists, setArtists] = useState<string[]>([]);
   const [birthday, setBirthday] = useState<Date | undefined>(undefined);
   
-  // Reset state when friend changes
-  useState(() => {
+  // Update state when friend changes using useEffect instead of useState callback
+  useEffect(() => {
     if (friend) {
       setNotes(friend.notes);
-      setArtists(friend.favoriteArtists);
+      setArtists(friend.favoriteArtists || []);
       setBirthday(friend.birthday ? new Date(friend.birthday) : undefined);
     }
-  });
+  }, [friend]);
   
   if (!friend) {
     return null;

@@ -31,6 +31,8 @@ export function AddFriendDialog({ isOpen, onClose, onAddFriend }: AddFriendDialo
       status: "active",
       notes: "",
       contactFrequency,
+      birthday: undefined,
+      favoriteArtists: [] // Add this missing required field
     };
     
     onAddFriend(newFriend);
