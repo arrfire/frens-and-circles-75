@@ -1,10 +1,9 @@
-
 import { Friend } from "@/types";
 import { Card, CardContent, CardFooter } from "./ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Badge } from "./ui/badge";
-import { CalendarDays, AlertCircle, CheckCircle } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
+import { CalendarDays, AlertCircle, CheckCircle, Cake } from "lucide-react";
+import { formatDistanceToNow, format } from "date-fns";
 
 interface FriendCardProps {
   friend: Friend;
@@ -20,6 +19,12 @@ export function FriendCard({ friend, onClick }: FriendCardProps) {
       onClick={onClick}
     >
       <CardContent className="pt-6 pb-2">
+        {friend.birthday && (
+          <div className="flex items-center gap-1 text-xs text-muted-foreground mb-2">
+            <Cake className="h-3 w-3" />
+            <span>{format(new Date(friend.birthday), 'MMM d')}</span>
+          </div>
+        )}
         <div className="flex items-center gap-4">
           <Avatar className="h-12 w-12">
             <AvatarImage src={friend.avatar} alt={friend.name} />

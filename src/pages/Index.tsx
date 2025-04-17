@@ -11,6 +11,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { UserCircle2, BriefcaseBusiness } from "lucide-react";
 import { Friend } from "@/types";
 import { useFriends } from "@/hooks/useFriends";
+import { ArtistLeaderboard } from "@/components/ArtistLeaderboard";
 
 const MAX_FRIENDS_PER_CATEGORY = 75;
 
@@ -167,6 +168,9 @@ const Index = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Artist Leaderboard */}
+        <ArtistLeaderboard friends={friends} />
         
         {/* Search and filter */}
         <div className="mb-6">
