@@ -9,7 +9,80 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      friend_favorite_artists: {
+        Row: {
+          artist_name: string
+          created_at: string
+          friend_id: string
+          id: string
+        }
+        Insert: {
+          artist_name: string
+          created_at?: string
+          friend_id: string
+          id?: string
+        }
+        Update: {
+          artist_name?: string
+          created_at?: string
+          friend_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "friend_favorite_artists_friend_id_fkey"
+            columns: ["friend_id"]
+            isOneToOne: false
+            referencedRelation: "friends"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      friends: {
+        Row: {
+          avatar: string | null
+          birthday: string | null
+          category: Database["public"]["Enums"]["friend_category"]
+          contact_frequency: Database["public"]["Enums"]["contact_frequency"]
+          created_at: string
+          id: string
+          last_interaction: string
+          name: string
+          notes: string | null
+          status: Database["public"]["Enums"]["friend_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar?: string | null
+          birthday?: string | null
+          category: Database["public"]["Enums"]["friend_category"]
+          contact_frequency?: Database["public"]["Enums"]["contact_frequency"]
+          created_at?: string
+          id?: string
+          last_interaction?: string
+          name: string
+          notes?: string | null
+          status?: Database["public"]["Enums"]["friend_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar?: string | null
+          birthday?: string | null
+          category?: Database["public"]["Enums"]["friend_category"]
+          contact_frequency?: Database["public"]["Enums"]["contact_frequency"]
+          created_at?: string
+          id?: string
+          last_interaction?: string
+          name?: string
+          notes?: string | null
+          status?: Database["public"]["Enums"]["friend_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -18,7 +91,9 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      contact_frequency: "weekly" | "biweekly" | "monthly"
+      friend_category: "bestfren" | "workfren"
+      friend_status: "active" | "busy" | "away"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -133,6 +208,10 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      contact_frequency: ["weekly", "biweekly", "monthly"],
+      friend_category: ["bestfren", "workfren"],
+      friend_status: ["active", "busy", "away"],
+    },
   },
 } as const
