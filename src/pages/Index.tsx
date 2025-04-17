@@ -9,13 +9,13 @@ import { AddFriendDialog } from "@/components/AddFriendDialog";
 import { Header } from "@/components/Header";
 import { Card, CardContent } from "@/components/ui/card";
 import { UserCircle2, BriefcaseBusiness } from "lucide-react";
-import { Friend, CircleStats } from "@/types";
-import { initialFriends } from "@/data/friends";
+import { Friend } from "@/types";
+import { useFriends } from "@/hooks/useFriends";
 
 const MAX_FRIENDS_PER_CATEGORY = 75;
 
 const Index = () => {
-  const [friends, setFriends] = useState<Friend[]>(initialFriends);
+  const { friends, isLoading, addFriend, updateFriend, deleteFriend } = useFriends();
   const [selectedFriend, setSelectedFriend] = useState<Friend | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -24,7 +24,7 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState("all");
   
   // Calculate circle stats
-  const calculateStats = (category: 'bestfren' | 'workfren'): CircleStats => {
+  const calculateStats = (category: 'bestfren' | 'workfren') => {
     const categoryFriends = friends.filter(friend => friend.category === category);
     const active = categoryFriends.filter(friend => friend.status === "active").length;
     
@@ -47,28 +47,7 @@ const Index = () => {
       needsAttention
     };
   };
-  
-  // Delete friend
-  const handleDeleteFriend = (friendId: string) => {
-    setFriends(prev => prev.filter(friend => friend.id !== friendId));
-  };
-  
-  // Update friend
-  const handleUpdateFriend = (updatedFriend: Friend) => {
-    setFriends(prev => 
-      prev.map(friend => 
-        friend.id === updatedFriend.id ? updatedFriend : friend
-      )
-    );
-    setSelectedFriend(null);
-  };
-  
-  // Add new friend
-  const handleAddFriend = (newFriend: Omit<Friend, "id">) => {
-    const id = `${newFriend.category}-${Date.now()}`;
-    setFriends(prev => [...prev, { ...newFriend, id }]);
-  };
-  
+
   // Sort and filter friends
   const sortAndFilterFriends = (friends: Friend[]) => {
     return friends
@@ -126,8 +105,6 @@ const Index = () => {
   };
 
   const filteredFriends = sortAndFilterFriends(friends);
-  
-  // Open friend detail modal
   const handleOpenFriendDetail = (friend: Friend) => {
     setSelectedFriend(friend);
     setIsDetailModalOpen(true);
@@ -136,6 +113,14 @@ const Index = () => {
   // Stats for both circles
   const bestFrienStats = calculateStats("bestfren");
   const workFrienStats = calculateStats("workfren");
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary" />
+      </div>
+    );
+  }
   
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -277,15 +262,15 @@ const Index = () => {
         friend={selectedFriend}
         isOpen={isDetailModalOpen}
         onClose={() => setIsDetailModalOpen(false)}
-        onUpdateFriend={handleUpdateFriend}
-        onDeleteFriend={handleDeleteFriend}
+        onUpdateFriend={updateFriend.mutate}
+        onDeleteFriend={deleteFriend.mutate}
       />
       
       {/* Add Friend Modal */}
       <AddFriendDialog
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
-        onAddFriend={handleAddFriend}
+        onAddFriend={addFriend.mutate}
       />
     </div>
   );
